@@ -21,7 +21,9 @@ type PlaylistData = {
     uri: `spotify:track:${string}`
 }
 
-type TrackElement = Element
+type TrackElement = HTMLElement
+
+type TrackUriToPlaylistData = Record<string, PlaylistData[]>
 
 // Initialize variables - these are stored at the module level, so accessible to all functions in this file
 let oldMainElement: HTMLElement | null = null
@@ -33,7 +35,7 @@ let mainElementObserver: MutationObserver | null = null
  */
 let tracklists: TrackElement[] = []
 let oldTracklists: TrackElement[] = []
-let trackUriToPlaylistData: Record<string, PlaylistData[]> = {}
+let trackUriToPlaylistData: TrackUriToPlaylistData = {}
 let playlistUpdated = false
 let showAllPlaylists = false
 let highlightTrack: string | null = null
@@ -55,7 +57,7 @@ function playlistUriToPlaylistId(uri: string): string | null {
 // it's new to me that pendingProps is exposed this way in the DOM
 // can't replicate it on stackBlitz (there pendingProps is a property of __reactFiber{randomString}) but w/e it's an implementation detail
 
-function getTracklistTrackUri(tracklistElement: any): string | null {
+function getTracklistTrackUri(tracklistElement: TrackElement): string | null {
     let values = Object.values(tracklistElement)
     if (!values) return null
 
@@ -154,7 +156,7 @@ function updateTracklist() {
                 playlistUpdated = true
             }
 
-            const trackUri = getTracklistTrackUri(track)
+            const trackUri = getTracklistTrackUri(track as HTMLElement)
 
             // If no trackUri is found, skip this track
             if (!trackUri) continue
@@ -166,13 +168,10 @@ function updateTracklist() {
             ) {
                 // can't quite figure out why we're clicking the track in a function
                 // that's called when the tracklist might be updated
-                // also, type conversion needed - when we ask the browser for elements (getElementsByClassName) that returns elements
-                // but we know React put it there so we can cast it to a React element
-                const trackAsReactElement =
-                    track as unknown as React.ElementType
-                // not sure why a React.ElementType can never have a click method
-                // @ts-ignore
-                trackAsReactElement.click && trackAsReactElement.click()
+
+                // we lost our type somehow, needed to support click function
+                const typedTrack = track as HTMLElement
+                typedTrack.click && typedTrack.click()
                 highlightTrack = null
             }
 
@@ -396,8 +395,9 @@ async function main() {
         localStorage.getItem('spicetify-playlist-labels:show-all') || 'false',
     )
 
-    // We could provide an actual type instead of any
-    const getDataAndUpdateTracklist = (promise: Promise<any>) => {
+    const getDataAndUpdateTracklist = (
+        promise: Promise<TrackUriToPlaylistData>,
+    ) => {
         promise.then((data) => {
             trackUriToPlaylistData = data
             playlistUpdated = true
