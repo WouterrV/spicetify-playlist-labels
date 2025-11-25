@@ -25,6 +25,8 @@ type TrackElement = HTMLElement
 
 type TrackUriToPlaylistData = Record<string, PlaylistData[]>
 
+type UpdatePromise = Promise<TrackUriToPlaylistData>
+
 // Initialize variables - these are stored at the module level, so accessible to all functions in this file
 let oldMainElement: HTMLElement | null = null
 let mainElement: HTMLElement | null = null
@@ -44,7 +46,7 @@ let maxExistingLabelCount = 0
 let maxLabelCount = 1
 let rowHeight = '56px'
 let mainView: HTMLElement | null = null
-let updatePromise: Promise<any> = Promise.resolve()
+let updatePromise: UpdatePromise | Promise<null | {}> = Promise.resolve(null)
 function playlistUriToPlaylistId(uri: string): string | null {
     if (!uri) return null
     return uri.match(/spotify:playlist:(.*)/)?.[1] || null
@@ -395,9 +397,7 @@ async function main() {
         localStorage.getItem('spicetify-playlist-labels:show-all') || 'false',
     )
 
-    const getDataAndUpdateTracklist = (
-        promise: Promise<TrackUriToPlaylistData>,
-    ) => {
+    const getDataAndUpdateTracklist = (promise: UpdatePromise) => {
         promise.then((data) => {
             trackUriToPlaylistData = data
             playlistUpdated = true
@@ -411,7 +411,9 @@ async function main() {
             updatePromise = updatePromise.then(() => {
                 return updateLikedTracks()
             })
-            getDataAndUpdateTracklist(updatePromise)
+
+            // We can type the promise, it's from Spicetify so it actually has data
+            getDataAndUpdateTracklist(updatePromise as UpdatePromise)
         },
     )
 
@@ -423,7 +425,9 @@ async function main() {
             updatePromise = updatePromise.then(() => {
                 return updatePlaylistData(event.data.uri)
             })
-            getDataAndUpdateTracklist(updatePromise)
+
+            // We can type the promise, it's from Spicetify so it actually has data
+            getDataAndUpdateTracklist(updatePromise as UpdatePromise)
         },
     )
 
