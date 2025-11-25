@@ -1,6 +1,10 @@
-import React, { useState } from 'react'
+import React from 'react'
 import ReactDOM from 'react-dom'
+
+// Styles
 import './app.css'
+
+// Helper functions
 import { removeTrackFromPlaylist } from './api'
 import {
     getTrackUriToPlaylistData,
@@ -8,24 +12,40 @@ import {
     updateLikedTracks,
 } from './playlist'
 
-let oldMainElement = null
-let mainElement = null
-let mainElementObserver = null
-let tracklists = []
-let oldTracklists = []
-let trackUriToPlaylistData = {}
+type PlaylistData = {
+    image: string
+    isLikedTracks: boolean
+    isOwnPlaylist: boolean
+    name: string
+    trackUid: string
+    uri: `spotify:track:${string}`
+}
+
+type TrackElement = Element
+
+// Initialize variables - these are stored at the module level, so accessible to all functions in this file
+let oldMainElement: HTMLElement | null = null
+let mainElement: HTMLElement | null = null
+let mainElementObserver: MutationObserver | null = null
+
+/** Holds the current list of track DOM elements and updates as the UI changes.
+ *  Why it's lists and not list: because the spotify CSS calls a track row a tracklist
+ */
+let tracklists: TrackElement[] = []
+let oldTracklists: TrackElement[] = []
+let trackUriToPlaylistData: Record<string, PlaylistData[]> = {}
 let playlistUpdated = false
 let showAllPlaylists = false
-let highlightTrack = null
-let highlightTrackPath = null
+let highlightTrack: string | null = null
+let highlightTrackPath: `/playlist/${string}` | string | null = null
 let maxExistingLabelCount = 0
 let maxLabelCount = 1
 let rowHeight = '56px'
-let mainView = null
-let updatePromise = Promise.resolve()
-
-function playlistUriToPlaylistId(uri) {
-    return uri.match(/spotify:playlist:(.*)/)[1]
+let mainView: HTMLElement | null = null
+let updatePromise: Promise<any> = Promise.resolve()
+function playlistUriToPlaylistId(uri: string): string | null {
+    if (!uri) return null
+    return uri.match(/spotify:playlist:(.*)/)?.[1] || null
 }
 
 /** Returns the track URI from a DOM-track list element
@@ -62,7 +82,9 @@ function getTracklistTrackUri(tracklistElement: any): string | null {
         return customPlaylistTrackUri
     }
 }
-
+/** Sets a CSS variable, based on the global maxLabelCount
+ *  the variable in turn defines the max-width of the labels container
+ */
 function calculateMaxLabelCount() {
     if (!mainView) return
 
@@ -133,12 +155,24 @@ function updateTracklist() {
             }
 
             const trackUri = getTracklistTrackUri(track)
+
+            // If no trackUri is found, skip this track
+            if (!trackUri) continue
+
             if (
                 highlightTrack === trackUri &&
                 Spicetify.Platform.History.location.pathname ===
                     highlightTrackPath
             ) {
-                track.click()
+                // can't quite figure out why we're clicking the track in a function
+                // that's called when the tracklist might be updated
+                // also, type conversion needed - when we ask the browser for elements (getElementsByClassName) that returns elements
+                // but we know React put it there so we can cast it to a React element
+                const trackAsReactElement =
+                    track as unknown as React.ElementType
+                // not sure why a React.ElementType can never have a click method
+                // @ts-ignore
+                trackAsReactElement.click && trackAsReactElement.click()
                 highlightTrack = null
             }
 
@@ -291,7 +325,9 @@ function updateTracklist() {
                                                 style={{
                                                     cursor: 'pointer',
                                                 }}
-                                                onClick={(e: Event) => {
+                                                onClick={(
+                                                    e: React.MouseEvent,
+                                                ) => {
                                                     e.stopPropagation()
                                                     const path =
                                                         playlistData.isLikedTracks
@@ -321,7 +357,11 @@ function updateTracklist() {
                     labelContainer,
                 )
 
-                lastColumn.insertBefore(labelContainer, lastColumn.firstChild)
+                lastColumn &&
+                    lastColumn.insertBefore(
+                        labelContainer,
+                        lastColumn.firstChild,
+                    )
             }
         }
 
@@ -334,13 +374,14 @@ async function observerCallback() {
     mainElement = document.querySelector('main')
     if (mainElement && !mainElement.isEqualNode(oldMainElement)) {
         if (oldMainElement) {
-            mainElementObserver.disconnect()
+            mainElementObserver && mainElementObserver.disconnect()
         }
         updateTracklist()
-        mainElementObserver.observe(mainElement, {
-            childList: true,
-            subtree: true,
-        })
+        mainElementObserver &&
+            mainElementObserver.observe(mainElement, {
+                childList: true,
+                subtree: true,
+            })
     }
 }
 
@@ -355,7 +396,8 @@ async function main() {
         localStorage.getItem('spicetify-playlist-labels:show-all') || 'false',
     )
 
-    const getDataAndUpdateTracklist = (promise) => {
+    // We could provide an actual type instead of any
+    const getDataAndUpdateTracklist = (promise: Promise<any>) => {
         promise.then((data) => {
             trackUriToPlaylistData = data
             playlistUpdated = true
@@ -365,7 +407,7 @@ async function main() {
 
     await Spicetify.Platform.LibraryAPI.getEvents().addListener(
         'update',
-        (event) => {
+        () => {
             updatePromise = updatePromise.then(() => {
                 return updateLikedTracks()
             })
@@ -375,7 +417,9 @@ async function main() {
 
     await Spicetify.Platform.PlaylistAPI.getEvents().addListener(
         'operation_complete',
-        (event) => {
+
+        // A custom Spicetify event, no type provided in spicetify.d.ts so easiest to just do 'any'
+        (event: any) => {
             updatePromise = updatePromise.then(() => {
                 return updatePlaylistData(event.data.uri)
             })
@@ -422,7 +466,7 @@ async function main() {
         calculateMaxLabelCount()
     })
 
-    resizeObserver.observe(mainView)
+    mainView && resizeObserver.observe(mainView)
 }
 
 export default main
