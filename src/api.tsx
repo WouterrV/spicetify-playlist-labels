@@ -9,8 +9,13 @@ export async function getLikedTracksCount() {
 }
 
 export async function getPlaylistItems(uri) {
-    const result = await Spicetify.Platform.PlaylistAPI.getContents(uri)
-    return result.items
+    // Sometimes Spicetify throws an error here despite a seemingly valid URI, best to catch that
+    try {
+        const result = await Spicetify.Platform.PlaylistAPI.getContents(uri)
+        return result.items
+    } catch {
+        return null
+    }
 }
 
 export async function removeTrackFromPlaylist(playlistUri, trackUri) {
