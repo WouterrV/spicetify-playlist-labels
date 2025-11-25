@@ -1,6 +1,12 @@
 # Spicetify Playlist Labels
 
-Adds playlist labels to your tracklist indicating the playlists in which a track is included. Clicking a label jumps to the playlist, right clicking removes the track from that playlist.
+Adds playlist labels to your tracklist indicating the playlists in which a track is included.
+
+This is awesome, because it allows you to rate tracks: simply create playlists '1 star', '2 star', etc. and add appropriate pictures to those playlists (see the bottom of this readme).
+
+Then you can add tracks to those playlists, after which those tracks will have visible if and how many stars they're rated on your account.
+
+Clicking a label jumps to the playlist, right clicking removes the track from that playlist, adding to playlists is unchanged.
 
 ## Attribution
 
