@@ -28,16 +28,39 @@ function playlistUriToPlaylistId(uri) {
     return uri.match(/spotify:playlist:(.*)/)[1]
 }
 
-function getTracklistTrackUri(tracklistElement) {
+/** Returns the track URI from a DOM-track list element
+ */
+// The DOM elements for tracks all have pendingProps (i.e. just the props), then we get the children and the children of that element
+// then that element (or a child) has a prop called uri, which is the track URI (universal resource identifier)
+// it's new to me that pendingProps is exposed this way in the DOM
+// can't replicate it on stackBlitz (there pendingProps is a property of __reactFiber{randomString}) but w/e it's an implementation detail
+
+function getTracklistTrackUri(tracklistElement: any): string | null {
     let values = Object.values(tracklistElement)
     if (!values) return null
-    const searchFrom = values[0]?.pendingProps?.children[0]?.props?.children
-    return (
+
+    // Spotify keeps the URI in various places depending on whether the context is a playlist/album/liked songs
+    // this selector works for most cases
+    // instead of ts-ignore we could properly check for property access but that's very verbose and the ?. operator works just fine
+    // @ts-ignore
+    const searchFrom = values?.[0]?.pendingProps?.children?.[0]?.props?.children
+
+    const uriNormalWay =
         searchFrom?.props?.uri ||
         searchFrom?.props?.children?.props?.uri ||
         searchFrom?.props?.children?.props?.children?.props?.uri ||
-        searchFrom[0]?.props?.uri
-    )
+        searchFrom?.[0]?.props?.uri
+
+    if (uriNormalWay) {
+        return uriNormalWay
+    } else {
+        // this selector doesn't for albums/liked songs-playlist, but seemingly only for custom playlists
+        let customPlaylistTrackUri =
+            // instead of ts-ignore we could properly check for property access but that's very verbose and the ?. operator works just fine
+            // @ts-ignore
+            values?.[0]?.pendingProps?.children?.props?.value?.item?.uri
+        return customPlaylistTrackUri
+    }
 }
 
 function calculateMaxLabelCount() {

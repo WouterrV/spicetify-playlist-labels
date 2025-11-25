@@ -8,7 +8,7 @@ export async function getLikedTracksCount() {
     return (await Spicetify.Platform.LibraryAPI.getTracks()).totalLength
 }
 
-export async function getPlaylistItems(uri) {
+export async function getPlaylistItems(uri: string) {
     // Sometimes Spicetify throws an error here despite a seemingly valid URI, best to catch that
     try {
         const result = await Spicetify.Platform.PlaylistAPI.getContents(uri)
