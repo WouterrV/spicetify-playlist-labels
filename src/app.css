@@ -1,8 +1,21 @@
 :root {
     --spicetify-playlist-labels-size: 28px;
     --spicetify-playlist-labels-gap: 6px;
-    --spicetify-playlist-labels-container-max-width: calc((var(--spicetify-playlist-labels-size) + var(--spicetify-playlist-labels-gap)) * var(--spicetify-playlist-labels-max-label-count, 1) + 16px);
-    --spicetify-playlist-labels-container-width: min(var(--spicetify-playlist-labels-container-max-width), calc(var(--spicetify-playlist-labels-size) * var(--spicetify-playlist-labels-label-count, 1) + var(--spicetify-playlist-labels-gap) * calc(var(--spicetify-playlist-labels-label-count, 1) - 1)));
+    --spicetify-playlist-labels-container-max-width: calc(
+        (
+                var(--spicetify-playlist-labels-size) +
+                    var(--spicetify-playlist-labels-gap)
+            ) * var(--spicetify-playlist-labels-max-label-count, 1) + 16px
+    );
+    --spicetify-playlist-labels-container-width: min(
+        var(--spicetify-playlist-labels-container-max-width),
+        calc(
+            var(--spicetify-playlist-labels-size) *
+                var(--spicetify-playlist-labels-label-count, 1) +
+                var(--spicetify-playlist-labels-gap) *
+                calc(var(--spicetify-playlist-labels-label-count, 1) - 1)
+        )
+    );
 }
 
 .spicetify-playlist-labels-labels-container {
@@ -39,29 +52,38 @@
     border-radius: calc(var(--row-height) * 0.5 * 0.1);
 }
 
-.main-trackList-trackList.main-trackList-indexable[aria-colcount="4"] .main-trackList-trackListRowGrid {
-  grid-template-columns:
-    [index] var(--tracklist-index-column-width, 16px)
-    [first] minmax(120px, var(--col1, 4fr))
-    [var1] minmax(120px, var(--col2, 2fr))
-    [last] calc(120px + var(--spicetify-playlist-labels-container-width) + 12px) !important;
+.main-trackList-trackList.main-trackList-indexable[aria-colcount='4']
+    .main-trackList-trackListRowGrid {
+    grid-template-columns:
+        [index] var(--tracklist-index-column-width, 16px)
+        [first] minmax(120px, var(--col1, 4fr))
+        [var1] minmax(120px, var(--col2, 2fr))
+        [last] calc(
+            120px + var(--spicetify-playlist-labels-container-width) + 12px
+        ) !important;
 }
 
-.main-trackList-trackList.main-trackList-indexable[aria-colcount="5"] .main-trackList-trackListRowGrid {
-  grid-template-columns:
-    [index] var(--tracklist-index-column-width, 16px)
-    [first] minmax(120px, var(--col1, 6fr))
-    [var1] minmax(120px, var(--col2, 4fr))
-    [var2] minmax(120px, var(--col3, 3fr))
-    [last] calc(120px + var(--spicetify-playlist-labels-container-width) + 12px) !important;
+.main-trackList-trackList.main-trackList-indexable[aria-colcount='5']
+    .main-trackList-trackListRowGrid {
+    grid-template-columns:
+        [index] var(--tracklist-index-column-width, 16px)
+        [first] minmax(120px, var(--col1, 6fr))
+        [var1] minmax(120px, var(--col2, 4fr))
+        [var2] minmax(120px, var(--col3, 3fr))
+        [last] calc(
+            120px + var(--spicetify-playlist-labels-container-width) + 12px
+        ) !important;
 }
 
-.main-trackList-trackList.main-trackList-indexable[aria-colcount="6"] .main-trackList-trackListRowGrid {
-  grid-template-columns:
-    [index] var(--tracklist-index-column-width, 16px)
-    [first] minmax(120px, var(--col1, 6fr))
-    [var1] minmax(120px, var(--col2, 4fr))
-    [var2] minmax(120px, var(--col3, 3fr))
-    [var3] minmax(120px, var(--col4, 2fr))
-    [last] calc(120px + var(--spicetify-playlist-labels-container-width) + 12px) !important;
+.main-trackList-trackList.main-trackList-indexable[aria-colcount='6']
+    .main-trackList-trackListRowGrid {
+    grid-template-columns:
+        [index] var(--tracklist-index-column-width, 16px)
+        [first] minmax(120px, var(--col1, 6fr))
+        [var1] minmax(120px, var(--col2, 4fr))
+        [var2] minmax(120px, var(--col3, 3fr))
+        [var3] minmax(120px, var(--col4, 2fr))
+        [last] calc(
+            120px + var(--spicetify-playlist-labels-container-width) + 12px
+        ) !important;
 }
